@@ -10,6 +10,12 @@ from courses.serializers import (
 from .permissions import IsModerator, IsOwner
 
 
+from rest_framework.generics import UpdateAPIView
+from .models import Course
+from .serializers import CourseSerializer
+from .tasks import send_course_update_email
+
+
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
@@ -89,3 +95,15 @@ class LessonDestroyAPIView(generics.DestroyAPIView):
     def get_queryset(self):
         user = self.request.user
         return Lesson.objects.filter(owner=user)
+
+
+class CourseUpdateAPIView(UpdateAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+
+    def perform_update(self, serializer):
+        # Сохраняем изменения курса
+        course = serializer.save()
+
+        # Вызываем отложенную задачу Celery, передавая ID курса
+        send_course_update_email.delay(course.id)

@@ -1,3 +1,4 @@
+# models.py
 from django.db import models
 from django.conf import settings
 
@@ -58,3 +59,31 @@ class Lesson(models.Model):
         related_name="%(class)ss",
         verbose_name="Владелец",
     )
+
+
+class Subscription(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="subscriptions",
+        verbose_name="Пользователь"
+    )
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name="subscriptions",
+        verbose_name="Курс"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name="Активна ли подписка"
+    )
+
+    class Meta:
+        verbose_name = "Подписка"
+        verbose_name_plural = "Подписки"
+        # Уникальная пара: пользователь не может подписаться на один и тот же курс дважды
+        unique_together = ('user', 'course')
+
+    def __str__(self):
+        return f"{self.user} - {self.course}"

@@ -180,3 +180,26 @@ CELERY_BEAT_SCHEDULE = {
         ),  # Расписание выполнения задачи (например, каждые 10 минут)
     },
 }
+
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'block_inactive_users_every_midnight': {
+        'task': 'users.tasks.block_inactive_users',
+        'schedule': crontab(hour=0, minute=0),  # Каждый день в 00:00
+    },
+}
+
+# config/settings.py
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+# Принудительно отключаем RESP3 протокол (который шлет команду HELLO)
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    'protocol': 2,
+    'sep': ':',
+}
+CELERY_REDIS_BACKEND_TRANSPORT_OPTIONS = {
+    'protocol': 2,
+}
