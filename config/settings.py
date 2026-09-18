@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "users",
     "courses",
     "django_filters",
+    "django_celery_beat",
 ]
 
 MIDDLEWARE = [
@@ -150,4 +151,32 @@ from datetime import timedelta
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+}
+
+
+# Настройки для Celery
+
+# URL-адрес брокера сообщений
+CELERY_BROKER_URL = "redis://localhost:6379"  # Например, Redis, который по умолчанию работает на порту 6379
+
+# URL-адрес брокера результатов, также Redis
+CELERY_RESULT_BACKEND = "redis://localhost:6379"
+
+# Часовой пояс для работы Celery
+CELERY_TIMEZONE = "Australia/Tasmania"
+
+# Флаг отслеживания выполнения задач
+CELERY_TASK_TRACK_STARTED = True
+
+# Максимальное время на выполнение задачи
+CELERY_TASK_TIME_LIMIT = 30 * 60
+
+# Настройки для Celery
+CELERY_BEAT_SCHEDULE = {
+    "task-name": {
+        "task": "myapp.tasks.my_task",  # Путь к задаче
+        "schedule": timedelta(
+            minutes=10
+        ),  # Расписание выполнения задачи (например, каждые 10 минут)
+    },
 }
