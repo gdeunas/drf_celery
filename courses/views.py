@@ -1,3 +1,5 @@
+# courses/views.py
+from django.db import transaction
 from rest_framework import viewsets, generics
 from rest_framework.permissions import IsAuthenticated
 
@@ -8,6 +10,12 @@ from courses.serializers import (
     CourseDetailSerializer,
 )
 from .permissions import IsModerator, IsOwner
+
+
+from rest_framework.generics import UpdateAPIView
+from .models import Course
+from .serializers import CourseSerializer
+from .tasks import send_course_update_email
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -38,6 +46,10 @@ class CourseViewSet(viewsets.ModelViewSet):
         if user.groups.filter(name="moderators").exists():
             return Course.objects.all()
         return Course.objects.filter(owner=user)
+
+    def perform_update(self, serializer) -> None:
+        course = serializer.save()
+        transaction.on_commit(lambda: send_course_update_email.delay(course.pk))
 
 
 class LessonCreateAPIView(generics.CreateAPIView):
