@@ -3,7 +3,7 @@ from django.db import models
 
 
 class User(AbstractUser):
-    username = None
+    username = None  # type: ignore[assignment]
     email = models.EmailField(
         unique=True, verbose_name="Email", help_text="Email address"
     )

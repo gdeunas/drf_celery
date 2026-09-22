@@ -11,11 +11,11 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
-from dotenv import load_dotenv
-
 from celery.schedules import crontab
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -33,7 +33,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS: list[str] = []
 
 
 # Application definition
@@ -148,7 +148,6 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
 
-from datetime import timedelta
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
@@ -163,9 +162,6 @@ CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
-# Максимальное время на выполнение задачи
-CELERY_TASK_TIME_LIMIT = 30 * 60
-
 # Настройки для Celery
 CELERY_BEAT_SCHEDULE = {
     "block-inactive-users-every-midnight": {
@@ -174,19 +170,7 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-from celery.schedules import crontab
-
-CELERY_BEAT_SCHEDULE = {
-    "block_inactive_users_every_midnight": {
-        "task": "users.tasks.block_inactive_users",
-        "schedule": crontab(hour=0, minute=0),  # Каждый день в 00:00
-    },
-}
-
 # config/settings.py
-
-CELERY_BROKER_URL = "redis://localhost:6379/0"
-CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
 
 # Принудительно отключаем RESP3 протокол (который шлет команду HELLO)
 CELERY_BROKER_TRANSPORT_OPTIONS = {
@@ -196,3 +180,4 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {
 CELERY_REDIS_BACKEND_TRANSPORT_OPTIONS = {
     "protocol": 2,
 }
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@example.com")

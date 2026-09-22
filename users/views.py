@@ -1,14 +1,14 @@
 # users/views.py
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
+from rest_framework.filters import OrderingFilter
+from rest_framework.permissions import AllowAny, IsAuthenticated
+
 from users.models import User
 from users.serializers import UserProfileSerializer, UserSerializer
 
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import OrderingFilter
 from .models import Payment
 from .serializers import PaymentSerializer
-
-from rest_framework.permissions import AllowAny, IsAuthenticated
 
 
 class UserProfileUpdateAPIView(generics.RetrieveUpdateAPIView):

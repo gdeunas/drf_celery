@@ -1,20 +1,13 @@
 # courses/views.py
 from django.db import transaction
-from rest_framework import viewsets, generics
+from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated
 
 from courses.models import Course, Lesson
-from courses.serializers import (
-    CourseSerializer,
-    LessonSerializer,
-    CourseDetailSerializer,
-)
+from courses.serializers import (CourseDetailSerializer, CourseSerializer,
+                                 LessonSerializer)
+
 from .permissions import IsModerator, IsOwner
-
-
-from rest_framework.generics import UpdateAPIView
-from .models import Course
-from .serializers import CourseSerializer
 from .tasks import send_course_update_email
 
 

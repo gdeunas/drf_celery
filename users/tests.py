@@ -1,4 +1,5 @@
 from datetime import timedelta
+
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework.test import APITestCase
@@ -14,9 +15,7 @@ class UserCeleryTests(APITestCase):
 
         # Используем .create(), чтобы избежать проблем с обязательным полем username
         self.active_user = User.objects.create(
-            email="active@test.com",
-            last_login=now,
-            is_active=True
+            email="active@test.com", last_login=now, is_active=True
         )
         self.active_user.set_password("password")
         self.active_user.save()
@@ -24,24 +23,20 @@ class UserCeleryTests(APITestCase):
         self.inactive_user = User.objects.create(
             email="inactive@test.com",
             last_login=now - timedelta(days=35),
-            is_active=True
+            is_active=True,
         )
         self.inactive_user.set_password("password")
         self.inactive_user.save()
 
         self.new_user_no_login = User.objects.create(
-            email="new_no_login@test.com",
-            last_login=None,
-            is_active=True
+            email="new_no_login@test.com", last_login=None, is_active=True
         )
         self.new_user_no_login.date_joined = now
         self.new_user_no_login.set_password("password")
         self.new_user_no_login.save()
 
         self.old_user_no_login = User.objects.create(
-            email="old_no_login@test.com",
-            last_login=None,
-            is_active=True
+            email="old_no_login@test.com", last_login=None, is_active=True
         )
         self.old_user_no_login.date_joined = now - timedelta(days=35)
         self.old_user_no_login.set_password("password")
