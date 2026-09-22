@@ -45,6 +45,10 @@ class CourseViewSet(viewsets.ModelViewSet):
             return Course.objects.all()
         return Course.objects.filter(owner=user)
 
+    def perform_update(self, serializer) -> None:
+        course = serializer.save()
+        transaction.on_commit(lambda: send_course_update_email.delay(course.pk))
+
 
 class LessonCreateAPIView(generics.CreateAPIView):
     queryset = Lesson.objects.all()
@@ -95,15 +99,3 @@ class LessonDestroyAPIView(generics.DestroyAPIView):
     def get_queryset(self):
         user = self.request.user
         return Lesson.objects.filter(owner=user)
-
-
-class CourseUpdateAPIView(UpdateAPIView):
-    queryset = Course.objects.all()
-    serializer_class = CourseSerializer
-
-    def perform_update(self, serializer):
-        # Сохраняем изменения курса
-        course = serializer.save()
-
-        # Вызываем отложенную задачу Celery, передавая ID курса
-        send_course_update_email.delay(course.id)

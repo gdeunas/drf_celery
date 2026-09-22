@@ -3,25 +3,21 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from celery import shared_task
 
+from django.db.models import Q
+
 User = get_user_model()
 
 
 @shared_task
-def block_inactive_users():
-    """
-    Фоновая задача для блокировки пользователей,
-    которые не заходили в систему более месяца.
-    """
-    # Вычисляем дату месяц назад с учетом текущей таймзоны
-    one_month_ago = timezone.now() - timedelta(days=30)
+def block_inactive_users() -> int:
+    user_model = get_user_model()
+    cutoff = timezone.now() - timedelta(days=30)
 
-    # Фильтруем активных пользователей, у которых last_login меньше этой даты
-    inactive_users = User.objects.filter(
-        is_active=True,
-        last_login__lt=one_month_ago
+    return (
+        user_model.objects.filter(is_active=True)
+        .filter(
+            Q(last_login__lt=cutoff)
+            | Q(last_login__isnull=True, date_joined__lt=cutoff)
+        )
+        .update(is_active=False)
     )
-
-    # Массово обновляем флаг ис_active для оптимизации запросов
-    updated_count = inactive_users.update(is_active=False)
-
-    return f"Успешно заблокировано пользователей: {updated_count}"

@@ -15,6 +15,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from celery.schedules import crontab
+
 load_dotenv()
 
 
@@ -120,7 +122,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Europe/Moscow"
 
 USE_I18N = True
 
@@ -155,51 +157,42 @@ SIMPLE_JWT = {
 
 
 # Настройки для Celery
-
-# URL-адрес брокера сообщений
-CELERY_BROKER_URL = "redis://localhost:6379"  # Например, Redis, который по умолчанию работает на порту 6379
-
-# URL-адрес брокера результатов, также Redis
-CELERY_RESULT_BACKEND = "redis://localhost:6379"
-
-# Часовой пояс для работы Celery
-CELERY_TIMEZONE = "Australia/Tasmania"
-
-# Флаг отслеживания выполнения задач
+CELERY_BROKER_URL = os.environ["CELERY_BROKER_URL"]
+CELERY_RESULT_BACKEND = os.environ["CELERY_RESULT_BACKEND"]
+CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
 
 # Максимальное время на выполнение задачи
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
 # Настройки для Celery
 CELERY_BEAT_SCHEDULE = {
-    "task-name": {
-        "task": "myapp.tasks.my_task",  # Путь к задаче
-        "schedule": timedelta(
-            minutes=10
-        ),  # Расписание выполнения задачи (например, каждые 10 минут)
+    "block-inactive-users-every-midnight": {
+        "task": "users.tasks.block_inactive_users",
+        "schedule": crontab(hour=0, minute=0),
     },
 }
 
 from celery.schedules import crontab
 
 CELERY_BEAT_SCHEDULE = {
-    'block_inactive_users_every_midnight': {
-        'task': 'users.tasks.block_inactive_users',
-        'schedule': crontab(hour=0, minute=0),  # Каждый день в 00:00
+    "block_inactive_users_every_midnight": {
+        "task": "users.tasks.block_inactive_users",
+        "schedule": crontab(hour=0, minute=0),  # Каждый день в 00:00
     },
 }
 
 # config/settings.py
 
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
 
 # Принудительно отключаем RESP3 протокол (который шлет команду HELLO)
 CELERY_BROKER_TRANSPORT_OPTIONS = {
-    'protocol': 2,
-    'sep': ':',
+    "protocol": 2,
+    "sep": ":",
 }
 CELERY_REDIS_BACKEND_TRANSPORT_OPTIONS = {
-    'protocol': 2,
+    "protocol": 2,
 }
